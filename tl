@@ -1,30 +1,148 @@
-def handle_userinput(user_question: str, user_id: str):
-    user_state = get_user_state(user_id)
-    conversation_chain = user_state['chain']
-    if not conversation_chain:
-        return None
-
-    # Get answer directly without refinement
-    answer = conversation_chain({'question': user_question})['answer'].strip()
-
-    # Transform the answer: replace periods between numbers with "point", and other periods with commas
-    transformed_answer = transform_ai_text(answer)
-
-    # Log events and update history
-    user_state['history'].append((user_question, transformed_answer))
-    log_event("PromptSentToGPT", f"Original Prompt: {user_question}", user_id=user_id)
-    log_event("UserQuestion", f"Q: {user_question}", user_id=user_id)
-    log_event("AIAnswer", f"A: {transformed_answer}", user_id=user_id)
-
-    return {'text': transformed_answer}
-
-def transform_ai_text(text):
-    import re
+def generate_html_content(self, meeting_data: Dict) -> str:
+    """Generate HTML content with embedded CSS for the email"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: #f5f5f5;
+            }
+            .container {
+                background-color: white;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                border-radius: 8px;
+                overflow: hidden;
+                margin: 20px auto;
+            }
+            .logo-header {
+                background-color: #1a1a1a;
+                padding: 20px;
+                text-align: center;
+            }
+            .logo {
+                width: 200px;
+                height: 60px;
+                background-color: #333;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                border-radius: 4px;
+            }
+            .content {
+                padding: 30px;
+            }
+            .section {
+                border-left: 4px solid #2c3e50;
+                margin: 20px 0;
+                padding-left: 15px;
+            }
+            .section-header {
+                background-color: #2c3e50;
+                color: white;
+                padding: 10px 15px;
+                margin: -5px 0 15px 0;
+                border-radius: 0 4px 4px 0;
+                font-size: 1.1em;
+            }
+            .info-grid {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            .info-label {
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .info-value {
+                color: #444;
+            }
+            .qa-item {
+                background-color: #f8f9fa;
+                padding: 15px;
+                margin-bottom: 15px;
+                border-radius: 4px;
+            }
+            .question {
+                color: #2c3e50;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .answer {
+                color: #444;
+                padding-left: 20px;
+            }
+            .metadata {
+                font-size: 0.9em;
+                color: #666;
+                text-align: center;
+                padding: 20px;
+                border-top: 1px solid #eee;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo-header">
+                <div class="logo">METAVERSE911</div>
+            </div>
+            <div class="content">
+                <div class="section">
+                    <div class="section-header">Meeting Summary</div>
+                    <div class="info-grid">
+    """
     
-    # First, handle periods between numbers (replace with "point")
-    text = re.sub(r'(\d)\.(\d)', r'\1point\2', text)
+    # Add meeting information
+    for key, value in meeting_data['meeting_info'].items():
+        html_content += f"""
+            <div class="info-label">{key.title()}</div>
+            <div class="info-value">{value}</div>
+        """
     
-    # Then replace remaining periods with commas
-    text = text.replace('.', ',')
+    html_content += """
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-header">Discussion Overview</div>
+                    <div class="info-value">
+                        The conversation discussed virtual reality as a computer-generated environment that simulates a physical presence in real or imagined worlds.
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">Questions and Responses</div>
+    """
     
-    return text
+    # Add Q&A section
+    for i, qa in enumerate(meeting_data['questions_and_responses'], 1):
+        html_content += f"""
+            <div class="qa-item">
+                <div class="question">Q{i}: {qa['question']}</div>
+                <div class="answer">A{i}: {qa['answer']}</div>
+            </div>
+        """
+    
+    html_content += """
+                </div>
+            </div>
+            <div class="metadata">
+                Generated by Metaverse911 Meeting System
+                <br>
+                """ + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + """
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return html_content
